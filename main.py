@@ -9,7 +9,6 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import random
-from replit import db
 import time
 
 #------------- Setups/Clients -----------------
@@ -277,7 +276,7 @@ async def duel(ctx):
       )
       async def response(interaction):
         global user_ans
-        user_ans = button.label
+        user_ans1 = interaction.button.
       button.callback = response
       view.add_item(button)
       id += 1
@@ -294,5 +293,4 @@ async def duel(ctx):
       await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
       run = False
   
-
 bot.run(os.environ['botKey'])
