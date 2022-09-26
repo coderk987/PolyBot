@@ -12,6 +12,7 @@ import random
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+import time
 
 
 # ------------- Setups/Clients -----------------
@@ -343,5 +344,4 @@ async def duel(ctx):
             await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
             run = False
 
-
-bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GWareJ.YDxHLooaE9909uVpe3ny55Oe3IYyiJj5M8ghO4")
+bot.run(os.environ['botKey'])
