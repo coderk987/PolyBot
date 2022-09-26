@@ -9,13 +9,9 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import random
-<<<<<<< HEAD
-from replit import db
-=======
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
->>>>>>> 16df27af26ccf25d23f611566f4ee0937dd0d0b1
 import time
 
 
