@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import random
+from replit import db
 import time
 
 #------------- Setups/Clients -----------------
