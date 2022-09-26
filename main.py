@@ -276,7 +276,7 @@ async def duel(ctx):
       )
       async def response(interaction):
         global user_ans
-        user_ans1 = interaction.button.
+        user_ans1 = button.label
       button.callback = response
       view.add_item(button)
       id += 1
