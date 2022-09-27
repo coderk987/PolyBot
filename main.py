@@ -301,37 +301,34 @@ async def duel(ctx):
         await ctx.send(f"""
     |--------------------|
     |   boss - {boss_health}          |
-    |                    |
-    |                    |
-    |                    |
-    |        {user_health} - You    |
-    |____________________|
-    """)
+    |                                |
+    |                                |
+    |                                |
+    |               {user_health} - You   |
+    |--------------------|""")
         question = "What is 1+1"
         options = ["0", "1", "2", "3"]
         a, b, c, d = [10, 15, 4, 6]
-        correct_ans = 1
+        correct_ans = 2
         user_ans = ""
         await ctx.send(question)
+        view = View()
+        id = 1
         for i in options:
-            id = 1
+            id_str = str(id)
             button = Button(
                 label=i,
-                custom_id=id,
+                custom_id=id_str,
                 style=discord.ButtonStyle.green
             )
-
             async def response(interaction):
                 global user_ans
                 user_ans = interaction.button.label
-# Dicord bot online now, dont abuse the commands, try to use as less commands as you can.
-# Ok 2 min de fir isko test karna hai abhi stop kar rha hoon mai
-# Ha ok
+                run = True
             button.callback = response
-            view = View()
             view.add_item(button)
             id += 1
-        await ctx.send(" ", view=view)
+        await ctx.send(" ",view=view)
         if user_ans == correct_ans:
             boss_health -= random.randint(a, b)
         elif user_ans != correct_ans:
@@ -343,5 +340,6 @@ async def duel(ctx):
         elif user_health <= 0:
             await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
             run = False
+        run = False
 
 bot.run(os.environ['botKey'])
