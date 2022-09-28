@@ -259,6 +259,10 @@ async def race(ctx, *, mention: discord.User):
     symbols = ['+', '-', '*']
     p1 = 0
     p2 = 0
+    refP1 = db.collection('users').document(str(ctx.author.id))
+    refP2 = db.collection('users').document(str(mention.id))
+    dataP1 = refP1.get().to_dict()
+    dataP2 = refP2.get().to_dict()
     await ctx.send(f':blue_square: - <@{ctx.message.author.id}>\n:red_square: - <@{mention.id}>\n')
     while p1 < 6 and p2 < 6:
         ques = str(random.randint(11, 99))+random.choice(symbols) + \
@@ -266,8 +270,21 @@ async def race(ctx, *, mention: discord.User):
         await sendMap(ctx, p1, p2)
         await ctx.send(ques)
         ans = eval(ques)
+        nitro1 = False
+        nitro2 = False
         while True:
             userAns = await bot.wait_for('message')
+            if userAns.content == "nitro":
+                print("SAID NITRO")
+                if userAns.author.id == racers[0]:
+                    if dataP1["items"]["nitro"] > 0:
+                        dataP1["items"]["nitro"] -= 1
+                        nitro1 = True
+                elif userAns.author.id == racers[1]:
+                    if dataP2["items"]["nitro"] > 0:
+                        dataP2["items"]["nitro"] -= 1
+                        nitro2 = True
+                continue
             print('ID: ', userAns.author.id)
             print('ans:', ans)
             print('Content: ', userAns.content)
@@ -275,20 +292,46 @@ async def race(ctx, *, mention: discord.User):
                 if userAns.content == str(ans):
                     corDec = await ctx.send(f'<@{racers[0]}> - Correct Answer.')
                     p1 += 1
+                    print(nitro1)
+                    if nitro1:
+                        print('Applied NITRO')
+                        p1 += 1
+                        nitro1 = False
                     break
                 else:
+                    if nitro1:
+                        nitro1 = False
                     await ctx.send('Wrong')
             elif userAns.author.id == racers[1]:
                 if userAns.content == str(ans):
                     corDec = await ctx.send(f'<@{racers[1]}> - Correct Answer.')
                     p2 += 1
+                    if nitro2:
+                        p2 += 1
+                        nitro2 = False
                     break
                 else:
+                    if nitro2:
+                        nitro2 = False
                     await ctx.send('Wrong')
+
     await sendMap(ctx, p1, p2)
     if p1 == 6:
+        await ctx.send('<@'+str(racers[0])+'> gained 50 XP and 10 Coins.')
+        refP1.update({
+            "exp": dataP1["exp"]+50,
+            "money": dataP1["money"]+10,
+            "items": dataP1["items"]
+        })
+        refP2.update({"items": dataP2["items"]})
         await ctx.send(f":trophy: - <@{racers[0]}>\n")
     if p2 == 6:
+        refP2.update({
+            "exp": dataP2["exp"]+50,
+            "money": dataP2["money"]+10,
+            "items": dataP2["items"]
+        })
+        refP1.update({"items": dataP1["items"]})
         await ctx.send(f":trophy: - <@{racers[1]}>\n")
 
 
@@ -324,5 +367,14 @@ async def duel(ctx):
         elif user_health <= 0:
             await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
             run = False
+<<<<<<< HEAD
         print(user_ans)
 bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gxm7vn.97ragzi7rXxoZYbqd9GvpvhO15ZuXLV_Ls4Kck")
+=======
+<<<<<<< HEAD
+
+bot.run(os.environ["botKey"])
+=======
+bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GiTCzw.tKZZsETgFbuB0Y90G1N0FeLNI37dmNlBiB5bx4")
+>>>>>>> a621d56d12b521dd5f720e8a94ba7892cb27159a
+>>>>>>> b892d651447e67f538287a41cea8d951beb887fd
