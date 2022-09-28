@@ -307,56 +307,14 @@ async def duel(ctx):
 |               {user_health} - You  |
 |--------------------|""")
         question = "What is 1+1"
-        options = ["0", "1", "2", "3"]
         a, b, c, d = [10, 15, 4, 6]
         correct_ans = "2"
         user_ans = ""
         await ctx.send(question)
-        view = View()
-        button = Button(
-                label=f"1)  {options[0]}",
-                custom_id="1",
-                style=discord.ButtonStyle.green
-            )
-        async def response(interaction):
-            await interaction.response.send_message(button.label)
-        button.callback = response
+        
 
-        button1 = Button(
-                label=f"2)  {options[1]}",
-                custom_id="2",
-                style=discord.ButtonStyle.green
-            )
-        async def response1(interaction):
-            await interaction.response.send_message(button1.label)
-        button1.callback = response1
-
-        button2 = Button(
-                label=f"3)  {options[2]}",
-                custom_id="3",
-                style=discord.ButtonStyle.green
-            )
-        async def response2(interaction):
-            await interaction.response.send_message(button2.label)
-        button2.callback = response2
-
-        button3 = Button(
-                label=f"4)  {options[3]}",
-                custom_id="4",
-                style=discord.ButtonStyle.green
-            )
-        async def response3(interaction):
-            await interaction.response.send_message(button3.label)
-        button3.callback = response3
-
-        view.add_item(button3)
-        view.add_item(button2)
-        view.add_item(button1)
-        view.add_item(button)
-        await ctx.send(" ",view=view)
-        time.sleep(30)
         if user_ans == correct_ans:
-            boss_health -= random.randint(a, b)
+                boss_health -= random.randint(a, b)
         elif user_ans != correct_ans:
             user_health -= random.randint(c, d)
 
@@ -366,4 +324,5 @@ async def duel(ctx):
         elif user_health <= 0:
             await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
             run = False
-bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GiTCzw.tKZZsETgFbuB0Y90G1N0FeLNI37dmNlBiB5bx4")
+        print(user_ans)
+bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gxm7vn.97ragzi7rXxoZYbqd9GvpvhO15ZuXLV_Ls4Kck")
