@@ -12,7 +12,7 @@ import random
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-import time
+import json
 
 
 # ------------- Setups/Clients -----------------
@@ -337,9 +337,14 @@ async def race(ctx, *, mention: discord.User):
 
 @bot.command()
 async def duel(ctx):
+    diff = "easy"
+    num = random.randint(40, 50)
+    question_api = requests.get(f"https://opentdb.com/api.php?amount=10&category=19&difficulty={diff}")
+    data = eval(question_api.text)
     user_health = 20
     boss_health = 100
     run = True
+    i = 0
     while run:
         await ctx.send(f"""
 |--------------------|
@@ -349,32 +354,28 @@ async def duel(ctx):
 |                                |
 |               {user_health} - You  |
 |--------------------|""")
-        question = "What is 1+1"
-        a, b, c, d = [10, 15, 4, 6]
-        correct_ans = "2"
-        user_ans = ""
+        print(i)
+        question = data["results"][i]["question"]
+        correct_ans = data["results"][i]["correct_answer"]
+        a, b, c, d = [99, 150, 4, 6]
         await ctx.send(question)
-        
-
-        if user_ans == correct_ans:
-                boss_health -= random.randint(a, b)
-        elif user_ans != correct_ans:
+        user_ans = await bot.wait_for('message')
+        if user_ans.content == correct_ans:
+            boss_health -= random.randint(a, b)
+            await ctx.send("Correct Answer!! ")
+        elif user_ans.content != correct_ans:
             user_health -= random.randint(c, d)
+            await ctx.send("Wrong Answer... ")
+
 
         if boss_health <= 0:
-            await ctx.send("Congratulatios!! You Won")
+            await ctx.send("Congratulatios!! You Won :trophy:")
             run = False
         elif user_health <= 0:
-            await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
+            await ctx.send("Bad luck you lost... Try again or u can practice and come again :pensive:")
             run = False
-<<<<<<< HEAD
-        print(user_ans)
-bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gxm7vn.97ragzi7rXxoZYbqd9GvpvhO15ZuXLV_Ls4Kck")
-=======
-<<<<<<< HEAD
+        i += 1
 
-bot.run(os.environ["botKey"])
-=======
-bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GiTCzw.tKZZsETgFbuB0Y90G1N0FeLNI37dmNlBiB5bx4")
->>>>>>> a621d56d12b521dd5f720e8a94ba7892cb27159a
->>>>>>> b892d651447e67f538287a41cea8d951beb887fd
+
+bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gxm7vn.97ragzi7rXxoZYbqd9GvpvhO15ZuXLV_Ls4Kck")
+
