@@ -226,6 +226,66 @@ async def pf(ctx):
 
 
 @bot.command()
+async def shop(ctx):
+    embed = discord.Embed(
+        title="Shop",
+        description='''
+        **Upgrades**\n
+        Armor :shield: : *100 Coins*
+        Sword :crossed_swords: : *100 Coins*\n
+        **Items**\n
+        Potion :syringe: : *20 Coins*
+        Nitro :fuel_pump: : *20 Coins*
+        ''',
+        color=0x33cccc
+    )
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def buy(ctx, *, name):
+    ref = db.collection('users').document(str(ctx.author.id))
+    data = ref.get().to_dict()
+    if name == 'Armor':
+        if ref["money"] >= 100:
+            if ref["armor"] >= 3:
+                await ctx.send("Your Armor is at Max Level.")
+            else:
+                data["armor"] = data["armor"]+1
+                data["money"] -= 100
+                await ctx.send("Upgraded Armor Level to: "+str(ref["armor"]+1)+'.')
+        else:
+            await ctx.send("Not Enough Money")
+    elif name == "Sword":
+        if ref["money"] >= 100:
+            if ref["sword"] >= 3:
+                await ctx.send("Your Sword is at Max Level.")
+            else:
+                data["sword"] = data["sword"]+1
+                data["money"] -= 100
+                await ctx.send("Upgraded Sword Level to: "+str(ref["sword"]+1)+'.')
+        else:
+            await ctx.send("Not Enough Money.")
+    elif name == "Potion":
+        if ref["money"] >= 20:
+            data["items"]["potion"] = data["items"]["potion"]+1
+            data["money"] -= 20
+            await ctx.send("Potion Succesfully Bought.")
+        else:
+            await ctx.send("Not Enough Money.")
+    elif name == "Nitro":
+        if ref["money"] >= 20:
+            data["items"]["nitro"] = data["items"]["nitro"]+1
+            data["money"] -= 20
+            await ctx.send("Nitro Succesfully Bought.")
+        else:
+            await ctx.send("Not Enough Money.")
+    else:
+        await ctx.send("Item Does Not Exist.")
+    ref.update(data)
+
+
+@bot.command()
 async def study(ctx):
     global study_msg_id
     # study_msg_id=msgID
@@ -357,37 +417,41 @@ async def duel(ctx):
         await ctx.send(question)
         view = View()
         button = Button(
-                label=f"1)  {options[0]}",
-                custom_id="1",
-                style=discord.ButtonStyle.green
-            )
+            label=f"1)  {options[0]}",
+            custom_id="1",
+            style=discord.ButtonStyle.green
+        )
+
         async def response(interaction):
             await interaction.response.send_message(button.label)
         button.callback = response
 
         button1 = Button(
-                label=f"2)  {options[1]}",
-                custom_id="2",
-                style=discord.ButtonStyle.green
-            )
+            label=f"2)  {options[1]}",
+            custom_id="2",
+            style=discord.ButtonStyle.green
+        )
+
         async def response1(interaction):
             await interaction.response.send_message(button1.label)
         button1.callback = response1
 
         button2 = Button(
-                label=f"3)  {options[2]}",
-                custom_id="3",
-                style=discord.ButtonStyle.green
-            )
+            label=f"3)  {options[2]}",
+            custom_id="3",
+            style=discord.ButtonStyle.green
+        )
+
         async def response2(interaction):
             await interaction.response.send_message(button2.label)
         button2.callback = response2
 
         button3 = Button(
-                label=f"4)  {options[3]}",
-                custom_id="4",
-                style=discord.ButtonStyle.green
-            )
+            label=f"4)  {options[3]}",
+            custom_id="4",
+            style=discord.ButtonStyle.green
+        )
+
         async def response3(interaction):
             await interaction.response.send_message(button3.label)
         button3.callback = response3
@@ -396,7 +460,7 @@ async def duel(ctx):
         view.add_item(button2)
         view.add_item(button1)
         view.add_item(button)
-        await ctx.send(" ",view=view)
+        await ctx.send(" ", view=view)
         time.sleep(30)
         if user_ans == correct_ans:
             boss_health -= random.randint(a, b)
@@ -409,9 +473,24 @@ async def duel(ctx):
         elif user_health <= 0:
             await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
             run = False
-<<<<<<< HEAD
 
-bot.run(os.environ["botKey"])
-=======
-bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GiTCzw.tKZZsETgFbuB0Y90G1N0FeLNI37dmNlBiB5bx4")
->>>>>>> a621d56d12b521dd5f720e8a94ba7892cb27159a
+
+@bot.command()
+async def lb(ctx):
+    q = db.collection("users").order_by(
+        "exp", direction=firestore.Query.DESCENDING).limit(5)
+    dt = q.get()
+    res = []
+    ctr = 1
+    for i in dt:
+        ctr += 1
+        res.append(str(i)+'\t**'+str(i.name)+'**\t' +
+                   str(i.exp)+' \$'+str(i.money))
+    embed = discord.Embed(
+        title="LeaderBoard",
+        description=res.join('\n'),
+        color=0x33cccc
+    )
+    await ctx.send(embed=embed)
+
+bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gxm7vn.97ragzi7rXxoZYbqd9GvpvhO15ZuXLV_Ls4Kck")
