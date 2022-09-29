@@ -13,7 +13,8 @@ import random
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-import time
+import json
+import math
 
 
 # ------------- Setups/Clients -----------------
@@ -215,16 +216,14 @@ async def setup(ctx):
     await sendProfData(ctx)
     await ctx.send("Setup Complete! You can Now enjoy PolyBot freely. Use the `-help` command to get started.")
 
-
 @bot.command()
 async def delete(ctx):
-    del db[str(ctx.author.id)]
-
+    db.collection("users").document(str(ctx.author.id)).delete()
+    await ctx.send("Deleted your life :rofl:")
 
 @bot.command()
 async def pf(ctx):
     await sendProfData(ctx)
-
 
 @bot.command()
 async def shop(ctx):
@@ -248,34 +247,34 @@ async def buy(ctx, *, name):
     ref = db.collection('users').document(str(ctx.author.id))
     data = ref.get().to_dict()
     if name == 'Armor':
-        if ref["money"] >= 100:
-            if ref["armor"] >= 3:
+        if data["money"] >= 100:
+            if data["armor"] >= 3:
                 await ctx.send("Your Armor is at Max Level.")
             else:
                 data["armor"] = data["armor"]+1
                 data["money"] -= 100
-                await ctx.send("Upgraded Armor Level to: "+str(ref["armor"]+1)+'.')
+                await ctx.send("Upgraded Armor Level to: "+str(data["armor"]))
         else:
             await ctx.send("Not Enough Money")
     elif name == "Sword":
-        if ref["money"] >= 100:
-            if ref["sword"] >= 3:
+        if data["money"] >= 100:
+            if data["sword"] >= 3:
                 await ctx.send("Your Sword is at Max Level.")
             else:
                 data["sword"] = data["sword"]+1
                 data["money"] -= 100
-                await ctx.send("Upgraded Sword Level to: "+str(ref["sword"]+1)+'.')
+                await ctx.send("Upgraded Sword Level to: "+str(data["sword"]))
         else:
             await ctx.send("Not Enough Money.")
     elif name == "Potion":
-        if ref["money"] >= 20:
+        if data["money"] >= 20:
             data["items"]["potion"] = data["items"]["potion"]+1
             data["money"] -= 20
             await ctx.send("Potion Succesfully Bought.")
         else:
             await ctx.send("Not Enough Money.")
     elif name == "Nitro":
-        if ref["money"] >= 20:
+        if data["money"] >= 20:
             data["items"]["nitro"] = data["items"]["nitro"]+1
             data["money"] -= 20
             await ctx.send("Nitro Succesfully Bought.")
@@ -284,6 +283,10 @@ async def buy(ctx, *, name):
     else:
         await ctx.send("Item Does Not Exist.")
     ref.update(data)
+
+@bot.command()
+async def pf(ctx):
+    await sendProfData(ctx)
 
 
 @bot.command()
@@ -398,101 +401,103 @@ async def race(ctx, *, mention: discord.User):
 
 @bot.command()
 async def duel(ctx):
+    refP1 = db.collection('users').document(str(ctx.author.id))
+    dataP1 = refP1.get().to_dict()
+    diff = ""
+    if dataP1["exp"] <= 1000:
+        diff = "easy"
+    elif dataP1["exp"] <= 3000:
+        diff = "medium"
+    else:
+        diff = "hard"
+    print(diff)
+    question_api = requests.get(f"https://opentdb.com/api.php?amount=10&category=19&difficulty={diff}")
+    data = eval(question_api.text)
     user_health = 20
     boss_health = 100
     run = True
+    i = 0
+    sharp = dataP1["sword"]
+    prot = dataP1["armor"]
     while run:
-        await ctx.send(f"""
-|--------------------|
-|   boss - {boss_health}          |
-|                                |
-|                                |
-|                                |
-|               {user_health} - You  |
-|--------------------|""")
-        question = "What is 1+1"
-        options = ["0", "1", "2", "3"]
-        a, b, c, d = [10, 15, 4, 6]
-        correct_ans = "2"
-        user_ans = ""
+        embed = discord.Embed(
+            title ='Boss Fight',
+            color = 0xee737e,
+            description = f"""
+   :dragon_face: - {boss_health}
+   {":red_square:"*math.ceil(boss_health/10)}          
+    {":green_square:"*math.ceil(user_health/4)}
+    {user_health} - :ninja:  
+"""
+        )
+        await ctx.send(embed=embed)
+        if i > 9:
+            i = 0
+        question = data["results"][i]["question"]
+        correct_ans = data["results"][i]["correct_answer"]
+        a, b, c, d = [10+(sharp*2), 15+(sharp*2), 4-prot, 7-prot]
         await ctx.send(question)
-        view = View()
-        button = Button(
-            label=f"1)  {options[0]}",
-            custom_id="1",
-            style=discord.ButtonStyle.green
-        )
+        run1 = True
+        while run1:
+            user_ans = await bot.wait_for('message')
+            if user_ans.content == "potion":
+                if dataP1["items"]["potion"] > 0:
+                    dataP1["items"]["potion"] -= 1
+                    heal = random.randint(7, 10)
+                    user_health += heal
+                    if user_health > 20:
+                        user_health = 20
+                    await ctx.send(f"You chugged a potion and healed {heal} points of health")
+            elif user_ans.content == "run":
+                await ctx.send("You fled")
+                await ctx.send("While running away you lost 5 coins and also lost 10 exp")
+                refP1.update({
+                "exp": dataP1["exp"]-10,
+                "money": dataP1["money"]-5,
+                "items": dataP1["items"]
+                })
+                run = False
+                run1 = False
+            elif user_ans.content == correct_ans:
+                boss_health -= random.randint(a, b)
+                await ctx.send("Correct Answer!! ")
+                run1 = False
+            elif user_ans.content != correct_ans:
+                user_health -= random.randint(c, d)
+                await ctx.send("Wrong Answer... ")
+                run1 = False
 
-        async def response(interaction):
-            await interaction.response.send_message(button.label)
-        button.callback = response
-
-        button1 = Button(
-            label=f"2)  {options[1]}",
-            custom_id="2",
-            style=discord.ButtonStyle.green
-        )
-
-        async def response1(interaction):
-            await interaction.response.send_message(button1.label)
-        button1.callback = response1
-
-        button2 = Button(
-            label=f"3)  {options[2]}",
-            custom_id="3",
-            style=discord.ButtonStyle.green
-        )
-
-        async def response2(interaction):
-            await interaction.response.send_message(button2.label)
-        button2.callback = response2
-
-        button3 = Button(
-            label=f"4)  {options[3]}",
-            custom_id="4",
-            style=discord.ButtonStyle.green
-        )
-
-        async def response3(interaction):
-            await interaction.response.send_message(button3.label)
-        button3.callback = response3
-
-        view.add_item(button3)
-        view.add_item(button2)
-        view.add_item(button1)
-        view.add_item(button)
-        await ctx.send(" ", view=view)
-        time.sleep(30)
-        if user_ans == correct_ans:
-            boss_health -= random.randint(a, b)
-        elif user_ans != correct_ans:
-            user_health -= random.randint(c, d)
 
         if boss_health <= 0:
-            await ctx.send("Congratulatios!! You Won")
+            await ctx.send("Congratulatios!! You Won :trophy:")
+            await ctx.send("You found 20 coins and got 100 XP")
+            refP1.update({
+            "exp": dataP1["exp"]+1000,
+            "money": dataP1["money"]+20,
+            "items": dataP1["items"]
+        })
+
             run = False
         elif user_health <= 0:
-            await ctx.send("Bad luck you lost... Try again if u want or u can practice and come again")
+            await ctx.send("Bad luck you lost... Try again or u can practice and come again :pensive:")
+            await ctx.send("While running away for your life you dropped 10 coins")
+            refP1.update({
+            "exp": dataP1["exp"]+10,
+            "money": dataP1["money"]-10,
+            "items": dataP1["items"]
+            })
             run = False
-
+        i += 1
 
 @bot.command()
-async def lb(ctx):
-    q = db.collection("users").order_by(
-        "exp", direction=firestore.Query.DESCENDING).limit(5)
-    dt = q.get()
-    res = []
-    ctr = 1
-    for i in dt:
-        ctr += 1
-        res.append(str(i)+'\t**'+str(i.name)+'**\t' +
-                   str(i.exp)+' \$'+str(i.money))
-    embed = discord.Embed(
-        title="LeaderBoard",
-        description=res.join('\n'),
-        color=0x33cccc
-    )
-    await ctx.send(embed=embed)
+async def stuff(ctx):
+    refP1 = db.collection('users').document(str(ctx.author.id))
+    dataP1 = refP1.get().to_dict()
+    dataP1["items"]["potion"] += 10
+    refP1.update({
+        "items": dataP1["items"],
+        "money": dataP1["money"]+1000
+    })
 
 load_dotenv()
 bot.run(os.environ['botKey'])
