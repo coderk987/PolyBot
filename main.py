@@ -13,6 +13,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 import json
+import math
 
 
 # ------------- Setups/Clients -----------------
@@ -419,14 +420,20 @@ async def duel(ctx):
     sharp = dataP1["sword"]
     prot = dataP1["armor"]
     while run:
-        await ctx.send(f"""
-|--------------------|
-|   boss - {boss_health}          |
-|                                |
-|                                |
-|                                |
-|               {user_health} - You  |
-|--------------------|""")
+        embed = discord.Embed(
+            title ='Boss Fight',
+            color = 0xee737e,
+            description = f"""
+   :dragon_face: - {boss_health}
+   {":red_square:"*math.ceil(boss_health/10)}          
+
+
+
+    {":green_square:"*math.ceil(user_health/4)}
+    {user_health} - :ninja:  
+"""
+        )
+        await ctx.send(embed=embed)
         if i > 9:
             i = 0
         question = data["results"][i]["question"]
