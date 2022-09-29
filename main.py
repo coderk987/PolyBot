@@ -503,5 +503,5 @@ async def stuff(ctx):
 
 
 
-bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gmg1R1.tmDjZMhgbk2xYYp1z1MuZjrpltcCF7pTr3ePpI")
+bot.run("key nhi dal sakta")
 
