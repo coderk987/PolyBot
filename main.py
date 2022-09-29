@@ -15,7 +15,6 @@ from firebase_admin import firestore
 import json
 import math
 
-
 # ------------- Setups/Clients -----------------
 
 # Wolfram
@@ -500,8 +499,27 @@ async def stuff(ctx):
         "items": dataP1["items"],
         "money": dataP1["money"]+1000
     })
+@bot.command()
+async def lb(ctx):
+    docs = db.collection('users').stream()
+    for doc in docs:
+        dataP1 = doc.get().to_dict()
+        users[doc.auther.id] = dataP1["exp"]
+        exp.append(dataP1["exp"])
+    users = {}
+    exp = []
+    print(users)
+    print(exp)
 
+@bot.command()
+async def play(ctx):
+    guild = ctx.guild
+    voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
+    audio_source = discord.FFmpegPCMAudio('Morning Coffee ☕️ [lofi hip hop_study beats].mp3')
+    if not voice_client.is_playing():
+        voice_client.play(audio_source, after=None)
 
+    
 
 bot.run("key nhi dal sakta")
 
