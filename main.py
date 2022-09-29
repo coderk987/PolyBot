@@ -146,7 +146,8 @@ async def sendProfData(ctx):
     embed.add_field(
         name="Game Data:-",
         value=f'''
-        \n**Level** : {userDoc['level']}
+        \n**Armor Level** : {userDoc['armor']}
+        **Sword Level** : {userDoc['sword']}
         **XP** : {userDoc['exp']}
         **Coins** : {userDoc['money']}\n
         ''',
@@ -205,8 +206,9 @@ async def setup(ctx):
     user = {
         "money": 0,
         "exp": 0,
-        "items": {"nitro": 1},
-        "level": 1
+        "items": {"nitro": 1,"potion":1},
+        "armor": 0,
+        "sword": 0
     }
 
     db.collection("users").document(str(ctx.author.id)).set(user)
@@ -217,12 +219,73 @@ async def setup(ctx):
 
 @bot.command()
 async def delete(ctx):
-    del db[str(ctx.author.id)]
+    db.collection("users").document(str(ctx.author.id)).delete()
+    await ctx.send("Deleted your life :rofl:")
 
 
 @bot.command()
 async def pf(ctx):
     await sendProfData(ctx)
+
+
+@bot.command()
+async def shop(ctx):
+    embed = discord.Embed(
+        title="Shop",
+        description='''
+        **Upgrades**\n
+        Armor :shield: : *100 Coins*
+        Sword :crossed_swords: : *100 Coins*\n
+        **Items**\n
+        Potion :syringe: : *20 Coins*
+        Nitro :fuel_pump: : *20 Coins*
+        ''',
+        color=0x33cccc
+    )
+    await ctx.send(embed=embed)
+
+
+@bot.command()
+async def buy(ctx, *, name):
+    ref = db.collection('users').document(str(ctx.author.id))
+    data = ref.get().to_dict()
+    if name == 'Armor':
+        if data["money"] >= 100:
+            if data["armor"] >= 3:
+                await ctx.send("Your Armor is at Max Level.")
+            else:
+                data["armor"] = data["armor"]+1
+                data["money"] -= 100
+                await ctx.send("Upgraded Armor Level to: "+str(data["armor"]))
+        else:
+            await ctx.send("Not Enough Money")
+    elif name == "Sword":
+        if data["money"] >= 100:
+            if data["sword"] >= 3:
+                await ctx.send("Your Sword is at Max Level.")
+            else:
+                data["sword"] = data["sword"]+1
+                data["money"] -= 100
+                await ctx.send("Upgraded Sword Level to: "+str(data["sword"]))
+        else:
+            await ctx.send("Not Enough Money.")
+    elif name == "Potion":
+        if data["money"] >= 20:
+            data["items"]["potion"] = data["items"]["potion"]+1
+            data["money"] -= 20
+            await ctx.send("Potion Succesfully Bought.")
+        else:
+            await ctx.send("Not Enough Money.")
+    elif name == "Nitro":
+        if data["money"] >= 20:
+            data["items"]["nitro"] = data["items"]["nitro"]+1
+            data["money"] -= 20
+            await ctx.send("Nitro Succesfully Bought.")
+        else:
+            await ctx.send("Not Enough Money.")
+    else:
+        await ctx.send("Item Does Not Exist.")
+    ref.update(data)
 
 
 @bot.command()
@@ -337,14 +400,24 @@ async def race(ctx, *, mention: discord.User):
 
 @bot.command()
 async def duel(ctx):
-    diff = "easy"
-    num = random.randint(40, 50)
+    refP1 = db.collection('users').document(str(ctx.author.id))
+    dataP1 = refP1.get().to_dict()
+    diff = ""
+    if dataP1["exp"] <= 1000:
+        diff = "easy"
+    elif dataP1["exp"] <= 3000:
+        diff = "medium"
+    else:
+        diff = "hard"
+    print(diff)
     question_api = requests.get(f"https://opentdb.com/api.php?amount=10&category=19&difficulty={diff}")
     data = eval(question_api.text)
     user_health = 20
     boss_health = 100
     run = True
     i = 0
+    sharp = dataP1["sword"]
+    prot = dataP1["armor"]
     while run:
         await ctx.send(f"""
 |--------------------|
@@ -354,28 +427,74 @@ async def duel(ctx):
 |                                |
 |               {user_health} - You  |
 |--------------------|""")
-        print(i)
+        if i > 9:
+            i = 0
         question = data["results"][i]["question"]
         correct_ans = data["results"][i]["correct_answer"]
-        a, b, c, d = [99, 150, 4, 6]
+        a, b, c, d = [10+(sharp*2), 15+(sharp*2), 4-prot, 7-prot]
         await ctx.send(question)
-        user_ans = await bot.wait_for('message')
-        if user_ans.content == correct_ans:
-            boss_health -= random.randint(a, b)
-            await ctx.send("Correct Answer!! ")
-        elif user_ans.content != correct_ans:
-            user_health -= random.randint(c, d)
-            await ctx.send("Wrong Answer... ")
+        run1 = True
+        while run1:
+            user_ans = await bot.wait_for('message')
+            if user_ans.content == "potion":
+                if dataP1["items"]["potion"] > 0:
+                    dataP1["items"]["potion"] -= 1
+                    heal = random.randint(7, 10)
+                    user_health += heal
+                    if user_health > 20:
+                        user_health = 20
+                    await ctx.send(f"You chugged a potion and healed {heal} points of health")
+            elif user_ans.content == "run":
+                await ctx.send("You fled")
+                await ctx.send("While running away you lost 5 coins and also lost 10 exp")
+                refP1.update({
+                "exp": dataP1["exp"]-10,
+                "money": dataP1["money"]-5,
+                "items": dataP1["items"]
+                })
+                run = False
+                run1 = False
+            elif user_ans.content == correct_ans:
+                boss_health -= random.randint(a, b)
+                await ctx.send("Correct Answer!! ")
+                run1 = False
+            elif user_ans.content != correct_ans:
+                user_health -= random.randint(c, d)
+                await ctx.send("Wrong Answer... ")
+                run1 = False
 
 
         if boss_health <= 0:
             await ctx.send("Congratulatios!! You Won :trophy:")
+            await ctx.send("You found 20 coins and got 100 XP")
+            refP1.update({
+            "exp": dataP1["exp"]+1000,
+            "money": dataP1["money"]+20,
+            "items": dataP1["items"]
+        })
+
             run = False
         elif user_health <= 0:
             await ctx.send("Bad luck you lost... Try again or u can practice and come again :pensive:")
+            await ctx.send("While running away for your life you dropped 10 coins")
+            refP1.update({
+            "exp": dataP1["exp"]+10,
+            "money": dataP1["money"]-10,
+            "items": dataP1["items"]
+            })
             run = False
         i += 1
+@bot.command()
+async def stuff(ctx):
+    refP1 = db.collection('users').document(str(ctx.author.id))
+    dataP1 = refP1.get().to_dict()
+    dataP1["items"]["potion"] += 10
+    refP1.update({
+        "items": dataP1["items"],
+        "money": dataP1["money"]+1000
+    })
 
 
-bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gxm7vn.97ragzi7rXxoZYbqd9GvpvhO15ZuXLV_Ls4Kck")
+
+bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.Gmg1R1.tmDjZMhgbk2xYYp1z1MuZjrpltcCF7pTr3ePpI")
 
