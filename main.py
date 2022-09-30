@@ -28,6 +28,8 @@ intents.message_content = True
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("-"),
                    intents=intents)
 
+bot.remove_command('help')
+
 # Firebase
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
@@ -539,8 +541,56 @@ async def play(ctx):
         await vc.disconnect()
     else:
         await ctx.send('User is not in a channel.')
+@bot.command()
+async def help(ctx):
+    general = discord.Embed(
+        title="General Commands",
+        color=0x33cccc,
+    )
+    general.add_field(
+        name="`-setup`", value="Sets Up your discord account with PolyBot.", inline=False)
+    general.add_field(
+        name="`-profile`", value="Shows your Level,Exp,Money and Items of your PolyBot Game Data.", inline=False)
+    general.add_field(
+        name="`-delete`", value="Deletes all your discord account data with PolyBot.", inline=False)
+    general.add_field(
+        name="`-help`", value="Shows this message.", inline=False)
+    await ctx.send(embed=general)
+
+    study = discord.Embed(
+        title="Learning Commands",
+        color=0x33cccc
+    )
+    study.add_field(
+        name="`-study`", value="Shows Important notes and formulas for different Mathematical Concepts.", inline=False)
+    study.add_field(name="`-find <query>`",
+                    value="Finds Answers for any mathematical query you ask.", inline=False)
+    await ctx.send(embed=study)
+
+    game = discord.Embed(
+        title="Game Commands",
+        color=0x33cccc
+    )
+    game.add_field(name="`-race <user>`",
+                   value="Challenges another user to a Arithmetic Racing Game.", inline=False)
+    game.add_field(
+        name="`-duel`", value="Initiates a Math Trivia based Boss Fight.", inline=False)
+    await ctx.send(embed=game)
+
+    shop = discord.Embed(
+        title="Marketplace Commands",
+        color=0x33cccc
+    )
+    shop.add_field(
+        name="`-shop`", value="Shows all available Items and Upgrades in the PolyBot shop.", inline=False)
+    shop.add_field(name="`-buy <item>`",
+                   value="Buys the specified item from the shop.", inline=False)
+    shop.add_field(name="`-buy <upgrade>`",
+                   value="Buys an upgrade for your Sword/Armor increasing Offense/Defense in Duels.", inline=False)
+    await ctx.send(embed=shop)
+
 
     
 
-bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.GdzV4U.S3WsTrmbOb7g0A6sBkYtH5--vMFb63l3SObELc")
+bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GjyF0k.8Y_xyf9NOhrtgmatOTT-9SCyowQCgESGcHxXPY")
 
