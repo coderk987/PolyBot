@@ -454,7 +454,7 @@ async def duel(ctx):
                     if user_health > 20:
                         user_health = 20
                     await ctx.send(f"You chugged a potion and healed {heal} points of health")
-            elif user_ans.content == "run":
+            elif user_ans.content == "quit":
                 await ctx.send("You fled")
                 await ctx.send("While running away you lost 5 coins and also lost 10 exp")
                 refP1.update({
@@ -506,18 +506,26 @@ async def stuff(ctx):
 @bot.command()
 async def lb(ctx):
     users = {}
+    lb = []
     docs = db.collection('users').stream()
     for doc in docs:
         doc1 = doc.to_dict()
-        users[doc.id] = doc1["exp"]
-    sorted_value_index = np.argsort(users.values())
-    dictionary_keys = list(users.keys())
-    sorted_dict = {dictionary_keys[i]: sorted(
-    users.values())[i] for i in range(len(dictionary_keys))}
+        users[doc1["exp"]] = doc.id
+    values = list(users.keys())
+    values.sort(reverse=True)
+    for i in values:
+        lb.append(users[i])
+    lb_text = ""
+    f = 1
+    for i in lb:
+        lb_text += f"{f}) "
+        lb_text += str(await bot.fetch_user(i))
+        lb_text += "\n"
+        f += 1
     embed = discord.Embed(
         title="Leaderboard",
         color= 0x33cccc,
-        description=sorted_dict
+        description=lb_text
     )
     await ctx.send(embed=embed)
 
@@ -592,5 +600,5 @@ async def help(ctx):
 
     
 
-bot.run("MTAyMDk4MjcxNjk2NTA3Mjk2Nw.GjyF0k.8Y_xyf9NOhrtgmatOTT-9SCyowQCgESGcHxXPY")
+bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.GDgabx.6JaR2UfvhEUrFczrPt9TghHPbDFRkTJg8FgC8Y")
 
