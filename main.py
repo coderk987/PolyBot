@@ -14,7 +14,9 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 import json
 import math
-
+import asyncio
+from collections import OrderedDict
+import numpy as np
 # ------------- Setups/Clients -----------------
 
 # Wolfram
@@ -501,25 +503,44 @@ async def stuff(ctx):
     })
 @bot.command()
 async def lb(ctx):
+    users = {}
     docs = db.collection('users').stream()
     for doc in docs:
-        dataP1 = doc.get().to_dict()
-        users[doc.auther.id] = dataP1["exp"]
-        exp.append(dataP1["exp"])
-    users = {}
-    exp = []
-    print(users)
-    print(exp)
+        doc1 = doc.to_dict()
+        users[doc.id] = doc1["exp"]
+    sorted_value_index = np.argsort(users.values())
+    dictionary_keys = list(users.keys())
+    sorted_dict = {dictionary_keys[i]: sorted(
+    users.values())[i] for i in range(len(dictionary_keys))}
+    embed = discord.Embed(
+        title="Leaderboard",
+        color= 0x33cccc,
+        description=sorted_dict
+    )
+    await ctx.send(embed=embed)
 
 @bot.command()
 async def play(ctx):
-    guild = ctx.guild
-    voice_client: discord.VoiceClient = discord.utils.get(bot.voice_clients, guild=guild)
-    audio_source = discord.FFmpegPCMAudio('Morning Coffee ☕️ [lofi hip hop_study beats].mp3')
-    if not voice_client.is_playing():
-        voice_client.play(audio_source, after=None)
+    user=ctx.message.author
+    voice_channel=user.voice.channel
+    channel=None
+
+    if voice_channel!= None:
+
+        channel=voice_channel.name
+        await ctx.send('User is in channel: '+ channel)
+        vc= await voice_channel.connect()
+        player = vc.create_ffmpeg_player('C:/Users/Administrator/OneDrive/Desktop/github/chatbot-shadytry2/Morning Coffee ☕️ [lofi hip hop_study beats].mp3', after=lambda: print('done'))
+        player.start()
+        while not player.is_done():
+            await asyncio.sleep(1)
+
+        player.stop()
+        await vc.disconnect()
+    else:
+        await ctx.send('User is not in a channel.')
 
     
 
-bot.run("key nhi dal sakta")
+bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.GdzV4U.S3WsTrmbOb7g0A6sBkYtH5--vMFb63l3SObELc")
 
