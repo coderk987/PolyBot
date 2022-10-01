@@ -413,7 +413,6 @@ async def duel(ctx):
         diff = "medium"
     else:
         diff = "hard"
-    print(diff)
     question_api = requests.get(
         f"https://opentdb.com/api.php?amount=10&category=19&difficulty={diff}")
     data = eval(question_api.text)
@@ -441,9 +440,18 @@ async def duel(ctx):
         if i > 9:
             i = 0
         question = data["results"][i]["question"]
+        question_list = list(question)
+        question_final = ''
+        for f in question_list:
+            if f.isalpha():
+                question_final += f
+            elif f.isspace():
+                question_final += f
+            elif f.isnumeric():
+                question_final += f
         correct_ans = data["results"][i]["correct_answer"]
         a, b, c, d = [10+(sharp*2), 15+(sharp*2), 4-prot, 7-prot]
-        await ctx.send(question)
+        await ctx.send(question_final)
         run1 = True
         while run1:
             user_ans = await bot.wait_for('message')
