@@ -609,4 +609,4 @@ async def help(ctx):
 
 
 load_dotenv()
-bot.run(os.getenv("botKey"))
+bot.run(os.environ["botKey"])
