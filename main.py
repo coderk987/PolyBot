@@ -514,11 +514,11 @@ async def lb(ctx):
     docs = db.collection('users').stream()
     for doc in docs:
         doc1 = doc.to_dict()
-        users[doc1["exp"]] = doc.id
-    values = list(users.keys())
+        users[doc.id] = doc1["exp"]
+    values = list(users.values())
     values.sort(reverse=True)
     for i in values:
-        lb.append(users[i])
+        lb.append(list(users.keys())[list(users.values()).index(i)])
     lb_text = ""
     f = 1
     for i in lb:
@@ -607,5 +607,6 @@ async def help(ctx):
                    value="Buys an upgrade for your Sword/Armor increasing Offense/Defense in Duels.", inline=False)
     await ctx.send(embed=shop)
 
+
 load_dotenv()
-bot.run(os.environ["botKey"])
+bot.run(os.getenv('TOKEN'))
