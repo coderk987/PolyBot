@@ -341,23 +341,30 @@ async def race(ctx, *, mention: discord.User):
         nitro2 = False
         while True:
             userAns = await bot.wait_for('message')
-            if userAnd.content == "quit":
+            if userAns.content == "quit":
                 if userAns.author.id == racers[0]:
+                    await ctx.send(f"Player <@{racers[0]}> has quit the Race.")
                     p2 = 6
                     break
                 elif userAns.author.id == racers[1]:
+                    await ctx.send(f"Player <@{racers[1]}> has quit the Race.")
                     p1 = 6
                     break
             if userAns.content == "nitro":
-                print("SAID NITRO")
                 if userAns.author.id == racers[0]:
                     if dataP1["items"]["nitro"] > 0:
                         dataP1["items"]["nitro"] -= 1
                         nitro1 = True
+                        await ctx.send(f"Player <@{racers[0]}> has used Nitro.")
+                    else:
+                        await ctx.send("You don't have any Nitro.")
                 elif userAns.author.id == racers[1]:
                     if dataP2["items"]["nitro"] > 0:
                         dataP2["items"]["nitro"] -= 1
                         nitro2 = True
+                        await ctx.send(f"Player <@{racers[1]}> has used Nitro.")
+                    else:
+                        await ctx.send("You don't have any Nitro.")
                 continue
             print('ID: ', userAns.author.id)
             print('ans:', ans)
