@@ -341,6 +341,13 @@ async def race(ctx, *, mention: discord.User):
         nitro2 = False
         while True:
             userAns = await bot.wait_for('message')
+            if userAnd.content == "quit":
+                if userAns.author.id == racers[0]:
+                    p2 = 6
+                    break
+                elif userAns.author.id == racers[1]:
+                    p1 = 6
+                    break
             if userAns.content == "nitro":
                 print("SAID NITRO")
                 if userAns.author.id == racers[0]:
