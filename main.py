@@ -16,7 +16,7 @@ import json
 import math
 import asyncio
 from collections import OrderedDict
-import numpy as np
+from dotenv import load_dotenv
 # ------------- Setups/Clients -----------------
 
 # Wolfram
@@ -210,7 +210,7 @@ async def setup(ctx):
     user = {
         "money": 0,
         "exp": 0,
-        "items": {"nitro": 1,"potion":1},
+        "items": {"nitro": 1, "potion": 1},
         "armor": 0,
         "sword": 0
     }
@@ -414,7 +414,8 @@ async def duel(ctx):
     else:
         diff = "hard"
     print(diff)
-    question_api = requests.get(f"https://opentdb.com/api.php?amount=10&category=19&difficulty={diff}")
+    question_api = requests.get(
+        f"https://opentdb.com/api.php?amount=10&category=19&difficulty={diff}")
     data = eval(question_api.text)
     user_health = 20
     boss_health = 100
@@ -424,9 +425,9 @@ async def duel(ctx):
     prot = dataP1["armor"]
     while run:
         embed = discord.Embed(
-            title ='Boss Fight',
-            color = 0xee737e,
-            description = f"""
+            title='Boss Fight',
+            color=0xee737e,
+            description=f"""
    :dragon_face: - {boss_health}
    {":red_square:"*math.ceil(boss_health/10)}          
 
@@ -458,9 +459,9 @@ async def duel(ctx):
                 await ctx.send("You fled")
                 await ctx.send("While running away you lost 5 coins and also lost 10 exp")
                 refP1.update({
-                "exp": dataP1["exp"]-10,
-                "money": dataP1["money"]-5,
-                "items": dataP1["items"]
+                    "exp": dataP1["exp"]-10,
+                    "money": dataP1["money"]-5,
+                    "items": dataP1["items"]
                 })
                 run = False
                 run1 = False
@@ -473,27 +474,28 @@ async def duel(ctx):
                 await ctx.send("Wrong Answer... ")
                 run1 = False
 
-
         if boss_health <= 0:
             await ctx.send("Congratulatios!! You Won :trophy:")
             await ctx.send("You found 20 coins and got 100 XP")
             refP1.update({
-            "exp": dataP1["exp"]+1000,
-            "money": dataP1["money"]+20,
-            "items": dataP1["items"]
-        })
+                "exp": dataP1["exp"]+1000,
+                "money": dataP1["money"]+20,
+                "items": dataP1["items"]
+            })
 
             run = False
         elif user_health <= 0:
             await ctx.send("Bad luck you lost... Try again or u can practice and come again :pensive:")
             await ctx.send("While running away for your life you dropped 10 coins")
             refP1.update({
-            "exp": dataP1["exp"]+10,
-            "money": dataP1["money"]-10,
-            "items": dataP1["items"]
+                "exp": dataP1["exp"]+10,
+                "money": dataP1["money"]-10,
+                "items": dataP1["items"]
             })
             run = False
         i += 1
+
+
 @bot.command()
 async def stuff(ctx):
     refP1 = db.collection('users').document(str(ctx.author.id))
@@ -503,6 +505,8 @@ async def stuff(ctx):
         "items": dataP1["items"],
         "money": dataP1["money"]+1000
     })
+
+
 @bot.command()
 async def lb(ctx):
     users = {}
@@ -524,23 +528,25 @@ async def lb(ctx):
         f += 1
     embed = discord.Embed(
         title="Leaderboard",
-        color= 0x33cccc,
+        color=0x33cccc,
         description=lb_text
     )
     await ctx.send(embed=embed)
 
+
 @bot.command()
 async def play(ctx):
-    user=ctx.message.author
-    voice_channel=user.voice.channel
-    channel=None
+    user = ctx.message.author
+    voice_channel = user.voice.channel
+    channel = None
 
-    if voice_channel!= None:
+    if voice_channel != None:
 
-        channel=voice_channel.name
-        await ctx.send('User is in channel: '+ channel)
-        vc= await voice_channel.connect()
-        player = vc.create_ffmpeg_player('C:/Users/Administrator/OneDrive/Desktop/github/chatbot-shadytry2/Morning Coffee ☕️ [lofi hip hop_study beats].mp3', after=lambda: print('done'))
+        channel = voice_channel.name
+        await ctx.send('User is in channel: ' + channel)
+        vc = await voice_channel.connect()
+        player = vc.create_ffmpeg_player(
+            'C:/Users/Administrator/OneDrive/Desktop/github/chatbot-shadytry2/Morning Coffee ☕️ [lofi hip hop_study beats].mp3', after=lambda: print('done'))
         player.start()
         while not player.is_done():
             await asyncio.sleep(1)
@@ -549,6 +555,8 @@ async def play(ctx):
         await vc.disconnect()
     else:
         await ctx.send('User is not in a channel.')
+
+
 @bot.command()
 async def help(ctx):
     general = discord.Embed(
@@ -583,6 +591,8 @@ async def help(ctx):
                    value="Challenges another user to a Arithmetic Racing Game.", inline=False)
     game.add_field(
         name="`-duel`", value="Initiates a Math Trivia based Boss Fight.", inline=False)
+    game.add_field(
+        name="`-lb`", value="Shows Global Leaderboard of all PolyBot Game Players.", inline=False)
     await ctx.send(embed=game)
 
     shop = discord.Embed(
@@ -597,8 +607,5 @@ async def help(ctx):
                    value="Buys an upgrade for your Sword/Armor increasing Offense/Defense in Duels.", inline=False)
     await ctx.send(embed=shop)
 
-
-    
-
-bot.run("MTAyMjQ3MzE3OTAzNTM1NzI3NA.GDgabx.6JaR2UfvhEUrFczrPt9TghHPbDFRkTJg8FgC8Y")
-
+load_dotenv()
+bot.run(os.environ["botKey"])
