@@ -188,6 +188,8 @@ racers = []
 async def on_raw_reaction_add(payload):
     if payload.message_id != study_msg_id:
         return
+    if payload.member == bot.user:
+        return
     emoji = str(payload.emoji)
     channel = bot.get_guild(payload.guild_id).get_channel(payload.channel_id)
     if emoji == "1️⃣":
@@ -310,6 +312,9 @@ async def study(ctx):
     )
     sent = await ctx.send(embed=embed)
     study_msg_id = sent.id
+    await sent.add_reaction("1️⃣")
+    await sent.add_reaction("2️⃣")
+    await sent.add_reaction("3️⃣")
 
 
 @bot.command()
@@ -407,6 +412,7 @@ async def race(ctx, *, mention: discord.User):
         refP2.update({"items": dataP2["items"]})
         await ctx.send(f":trophy: - <@{racers[0]}>\n")
     if p2 == 6:
+        await ctx.send('<@'+str(racers[1])+'> gained 50 XP and 10 Coins.')
         refP2.update({
             "exp": dataP2["exp"]+50,
             "money": dataP2["money"]+10,
