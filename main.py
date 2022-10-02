@@ -244,7 +244,7 @@ async def shop(ctx):
         Sword :crossed_swords: : *100 Coins*\n
         **Items**\n
         Potion :syringe: : *20 Coins*
-        Nitro :fuel_pump: : *20 Coins*
+        Nitro :fuelpump: : *20 Coins*
         ''',
         color=0x33cccc
     )
