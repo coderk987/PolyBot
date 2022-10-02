@@ -460,21 +460,25 @@ async def duel(ctx):
         if i > 9:
             i = 0
         question = data["results"][i]["question"]
-        question_list = list(question)
         question_final = ''
-        for f in question_list:
-            if f.isalpha():
-                question_final += f
-            elif f.isspace():
-                question_final += f
-            elif f.isnumeric():
-                question_final += f
+        run2 = False
+        for f in question:
+            if f == "&":
+                run2 = True
+                continue
+            if run2:
+                if f == ";":
+                    run2 = False
+                continue
+            question_final += f
+        await ctx.send(question_final)
         correct_ans = data["results"][i]["correct_answer"]
         a, b, c, d = [10+(sharp*2), 15+(sharp*2), 4-prot, 7-prot]
-        await ctx.send(question_final)
         run1 = True
         while run1:
             user_ans = await bot.wait_for('message')
+            if user_ans.author != ctx.author:
+                continue
             if user_ans.content == "potion":
                 if dataP1["items"]["potion"] > 0:
                     dataP1["items"]["potion"] -= 1
@@ -535,16 +539,23 @@ async def stuff(ctx):
     })
 
 
+def sort1(val):
+    return val[1]
+
+
 @bot.command()
 async def lb(ctx):
     users = {}
     lb = []
     docs = db.collection('users').stream()
+    a = 1
     for doc in docs:
         doc1 = doc.to_dict()
-        users[doc.id] = doc1["exp"]
+        li = [a, doc1["exp"]]
+        users[doc.id] = li
+        a += 1
     values = list(users.values())
-    values.sort(reverse=True)
+    values.sort(key=sort1, reverse=True)
     for i in values:
         lb.append(list(users.keys())[list(users.values()).index(i)])
     lb_text = ""
