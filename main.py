@@ -226,7 +226,7 @@ async def setup(ctx):
 @bot.command()
 async def delete(ctx):
     db.collection("users").document(str(ctx.author.id)).delete()
-    await ctx.send("Deleted your life :rofl:")
+    await ctx.send("Deleted all data of your PolyBot Account.")
 
 
 @bot.command()
@@ -605,7 +605,7 @@ async def help(ctx):
     general.add_field(
         name="`-setup`", value="Sets Up your discord account with PolyBot.", inline=False)
     general.add_field(
-        name="`-profile`", value="Shows your Level,Exp,Money and Items of your PolyBot Game Data.", inline=False)
+        name="`-pf`", value="Shows your Level,Exp,Money and Items of your PolyBot Game Data.", inline=False)
     general.add_field(
         name="`-delete`", value="Deletes all your discord account data with PolyBot.", inline=False)
     general.add_field(
